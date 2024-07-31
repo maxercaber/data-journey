@@ -1,0 +1,43 @@
+Project #1 - HR Employee Survey
+
+POSTGRESQL DATA CLEANING / PREPARATION
+
+CREATE TABLE responses (
+	pk serial primary key,
+	"Response ID" int,
+	Status VARCHAR(20),
+	Department VARCHAR(300),
+	"Role" VARCHAR(20),
+	Question VARCHAR(20),
+	"Response" int,
+	"Response Text" VARCHAR(30)
+);
+
+SELECT * from responses ORDER BY pk ASC;
+
+ALTER TABLE responses RENAME COLUMN "Response" TO "numberanswer";
+
+-- Converting rows where no job role is specified to "Employee".
+UPDATE responses SET jobrole = 'Employee' WHERE jobrole IS NULL;
+
+-- Deleting incomplete responses because they could skew the data.
+DELETE from responses WHERE status = 'Incomplete';
+
+-- Finding duplicate responses (rows with the same response ID).
+SELECT responseid, COUNT(*)
+FROM responses
+GROUP BY responseid
+HAVING COUNT(*) > 1;
+
+-- Deleting duplicate responses.
+DELETE FROM responses 
+WHERE pk NOT IN (
+	SELECT MIN(pk) FROM responses GROUP BY responseid);
+
+-- Combining Question J responses after a spacing issue was missed in Excel cleaning.
+UPDATE responses
+SET question = 'Question J'
+WHERE question = 'Question J ';
+
+SELECT * FROM responses
+WHERE numberanswer = '0';
